@@ -77,11 +77,11 @@ class Socket:
     async def _run_callback_safe(self, callback: Callback, payload: Dict) -> None:
         try:
             if asyncio.iscoroutinefunction(callback):
-                await callback(payload)
+                asyncio.create_task(callback(payload))
             else:
                 callback(payload)
         except Exception:
-            logging.error("Callback error occurred")
+            raise CallbackError(f"Error in callback: {callback.__name__}")
 
     @ensure_connection
     async def listen(self) -> None:
@@ -123,7 +123,7 @@ class Socket:
                         else:
                             for cl in channel.listeners:
                                 if cl.ref in ["*", msg.ref]:
-                                    asyncio.create_task(self._run_callback_safe(cl.callback, msg.payload))
+                                    await self._run_callback_safe(cl.callback, msg.payload)
                                     # if asyncio.iscoroutinefunction(cl.callback):
                                     #     asyncio.create_task(cl.callback(msg.payload))
                                     # else:
@@ -138,7 +138,7 @@ class Socket:
                 for channel in self.channels.get(msg.topic, []):
                     for cl in channel.listeners:
                         if cl.event in ["*", msg.event]:
-                            asyncio.create_task(self._run_callback_safe(cl.callback, msg.payload))
+                            await self._run_callback_safe(cl.callback, msg.payload)
                             # if asyncio.iscoroutinefunction(cl.callback):
                             #     asyncio.create_task(cl.callback(msg.payload))
                             # else:
@@ -168,6 +168,9 @@ class Socket:
                 logging.info("Listen task was cancelled.")
                 await self.leave_all()
                 break
+
+            except CallbackError as e:
+                logging.error(f"Error in callback: {e}")
 
             except (
                     Exception
