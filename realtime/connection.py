@@ -80,8 +80,8 @@ class Socket:
                 await callback(payload)
             else:
                 callback(payload)
-        except Exception as e:
-            raise CallbackError from e
+        except Exception:
+            logging.error("Callback error occurred")
 
     @ensure_connection
     async def listen(self) -> None:
@@ -168,9 +168,6 @@ class Socket:
                 logging.info("Listen task was cancelled.")
                 await self.leave_all()
                 break
-
-            except CallbackError:
-                logging.error("Callback error occurred", exc_info=True)
 
             except (
                     Exception
