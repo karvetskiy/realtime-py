@@ -124,10 +124,6 @@ class Socket:
                             for cl in channel.listeners:
                                 if cl.ref in ["*", msg.ref]:
                                     await self._run_callback_safe(cl.callback, msg.payload)
-                                    # if asyncio.iscoroutinefunction(cl.callback):
-                                    #     asyncio.create_task(cl.callback(msg.payload))
-                                    # else:
-                                    #     cl.callback(msg.payload)
 
                 if msg.event == ChannelEvents.close:
                     for channel in self.channels.get(msg.topic, []):
@@ -139,11 +135,6 @@ class Socket:
                     for cl in channel.listeners:
                         if cl.event in ["*", msg.event]:
                             await self._run_callback_safe(cl.callback, msg.payload)
-                            # if asyncio.iscoroutinefunction(cl.callback):
-                            #     asyncio.create_task(cl.callback(msg.payload))
-                            # else:
-                            #     cl.callback(msg.payload)
-
 
             except ConnectionClosedOK:
                 logging.info("Connection was closed normally.")
