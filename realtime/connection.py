@@ -169,8 +169,8 @@ class Socket:
                 await self.leave_all()
                 break
 
-            except CallbackError as e:
-                logging.error(f"Error in callback: {e}", exc_info=True)
+            except CallbackError:
+                logging.info("Error in callback")
 
             except (
                     Exception
