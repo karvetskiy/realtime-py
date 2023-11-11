@@ -80,8 +80,8 @@ class Socket:
                 asyncio.create_task(callback(payload))
             else:
                 callback(payload)
-        except Exception:
-            raise CallbackError(f"Error in callback: {callback.__name__}")
+        except Exception as e:
+            raise CallbackError("Error in callback") from e
 
     @ensure_connection
     async def listen(self) -> None:
@@ -170,7 +170,7 @@ class Socket:
                 break
 
             except CallbackError as e:
-                logging.error(f"Error in callback: {e}")
+                logging.error(f"Error in callback: {e}", exc_info=True)
 
             except (
                     Exception
