@@ -189,8 +189,9 @@ class Socket:
             self.keep_alive_task = None
 
         # Close the WebSocket connection
-        await self.ws_connection.close()
-        logging.info("WebSocket connection closed.")
+        if hasattr(self.ws_connection, 'close'):
+            await self.ws_connection.close()
+            logging.info("WebSocket connection closed.")
 
         self.connected = False
 
