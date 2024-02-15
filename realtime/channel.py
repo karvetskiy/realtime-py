@@ -57,6 +57,7 @@ class Channel:
 
         try:
             await self.socket.ws_connection.send(json.dumps(join_req))
+            self.joined = True
         except Exception as e:
             logging.error(f"Error while joining channel: {str(e)}", exc_info=True)
             return
@@ -74,6 +75,7 @@ class Channel:
 
         try:
             await self.socket.ws_connection.send(json.dumps(leave_req))
+            self.joined = False
         except Exception as e:
             logging.error(f"Error while leaving channel: {str(e)}", exc_info=True)
             return
