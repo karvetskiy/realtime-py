@@ -146,6 +146,8 @@ class Socket:
                     else:
                         logging.exception("Connection with the server closed.")
                         break
+                except CallbackError:
+                    logging.info("Error in callback")
         await listen_to_messages()
 
     async def connect(self) -> None:
