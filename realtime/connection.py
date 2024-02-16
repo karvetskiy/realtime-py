@@ -7,6 +7,7 @@ from typing import Callable, List, Dict, TypeVar, DefaultDict
 
 import websockets
 from typing_extensions import ParamSpec
+from websockets.exceptions import ConnectionClosed
 
 from realtime.channel import Channel
 from realtime.exceptions import NotConnectedError
@@ -136,6 +137,15 @@ class Socket:
                         for cl in channel.listeners:
                             if cl.event in ["*", msg.event]:
                                 await self._run_callback_safe(cl.callback, msg.payload)
+                except ConnectionClosed as e:
+                    logging.error(f"Connection closed: {e}")
+                    if self.auto_reconnect:
+                        logging.info("Connection with server closed, trying to reconnect...")
+                        await asyncio.sleep(2)
+                        await self.connect()
+                    else:
+                        logging.exception("Connection with the server closed.")
+                        break
                 except TimeoutError as e:
                     logging.error(f"Timeout error: {e}")
                     await self.close()
