@@ -139,6 +139,7 @@ class Socket:
                                 await self._run_callback_safe(cl.callback, msg.payload)
                 except ConnectionClosed as e:
                     logging.error(f"Connection closed: {e}")
+                    await self.close()
                     if self.auto_reconnect:
                         logging.info("Connection with server closed, trying to reconnect...")
                         await asyncio.sleep(2)
