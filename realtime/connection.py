@@ -60,7 +60,6 @@ class Socket:
         if params is None:
             params = {}
         self.url = url
-        self.channels = defaultdict(list)
         self.connected = False
         self.params = params
         self.hb_interval = hb_interval
@@ -168,6 +167,10 @@ class Socket:
                     self.listen_task = asyncio.create_task(self._listen())
                 if self.keep_alive_task is None or self.keep_alive_task.done():
                     self.keep_alive_task = asyncio.create_task(self._keep_alive())
+                if self.channels:
+                    for channels in self.channels.values():
+                        for channel in channels:
+                            await channel.join()
             except Exception as e:
                 logging.error(f"Error connecting to WebSocket: {e}")
                 await self.shutdown()
