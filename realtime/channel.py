@@ -39,6 +39,7 @@ class Channel:
         self.topic = topic
         self.listeners: List[CallbackListener] = []
         self.joined = False
+        self.rejoin_on_disconnect = True
         self.join_ref = str(uuid.uuid4())
         self.control_msg_ref = ""
 

@@ -36,6 +36,9 @@ def ensure_connection(func: Callable[T_ParamSpec, T_Retval]):
 class CallbackError(Exception):
     pass
 
+class ChannelJoinError(Exception):
+    pass
+
 
 class Socket:
     def __init__(
@@ -117,7 +120,7 @@ class Socket:
                                     logging.info(
                                         f"Error joining channel: {msg.topic} - {msg.payload['response']['reason']}"
                                     )
-                                    break
+                                    raise ChannelJoinError
                                 elif msg.payload["status"] == "ok":
                                     logging.info(f"Successfully joined {msg.topic}")
                                     continue
@@ -136,7 +139,7 @@ class Socket:
                         for cl in channel.listeners:
                             if cl.event in ["*", msg.event]:
                                 await self._run_callback_safe(cl.callback, msg.payload)
-                except (TimeoutError, ConnectionClosed) as e:
+                except (TimeoutError, ConnectionClosed, ChannelJoinError) as e:
                     logging.error(f"Connection error: {e}")
                     await self.close()
                     if self.auto_reconnect:
@@ -170,7 +173,8 @@ class Socket:
                 if self.channels:
                     for channels in self.channels.values():
                         for channel in channels:
-                            await channel.join()
+                            if channel.rejoin_on_disconnect:
+                                await channel.join()
             except Exception as e:
                 logging.error(f"Error connecting to WebSocket: {e}")
                 await self.shutdown()
